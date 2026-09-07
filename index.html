@@ -6,7 +6,7 @@
 <title>DAILYFLOW — Professional Daily Planner</title>
   <link rel="icon" type="image/png" href="looogo.png.png">
   <link rel="apple-touch-icon" href="looogo.png.png">
-  <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIkRhaWx5RmxvdyIsCiAgInNob3J0X25hbWUiOiAiRGFpbHlGbG93IiwKICAic3RhcnRfdXJsIjogIi4vIiwKICAic2NyZWVuX29yaWVudGF0aW9uIjogInBvcnRyYWl0IiwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjMGYxN2FhIiwKICAidGhlbWVfY29sb3IiOiAiIzYzNjZmMSIsCiAgImljb25zIjogW1sKICAgIHsKICAgICAgInNyYyI6ICJsb29vZ28ucG5nLnBuZyIsCiAgICAgICJzaXplcyI6ICI1MTJ4NTEyIiwKICAgICAgInR5cGUiOiAiaW1hZ2UvcG5nIgogICAgfG9yCiAgICBdCiAgICBdCiB9">
+  <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIkRhaWx5RmxvdyIsCiAgInNob3J0X25hbWUiOiAiRGFpbHlGbG93IiwKICAic3RhcnRfdXJsIjogIi4vIiwKICAic2NyZWVuX29yaWVudGF0aW9uIjogInBvcnRyYWl0IiwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjMGYxN2FhIiwKICAidGhlbWVfY29sb3IiOiAiIzYzNjZm1zIsCiAgImljb25zIjogW1sKICAgIHsKICAgICAgInNyYyI6ICJsb29vZ28ucG5nLnBuZyIsCiAgICAgICJzaXplcyI6ICI1MTJ4NTEyIiwKICAgICAgInR5cGUiOiAiaW1hZ2UvcG5nIgogICAgfG9yCiAgICBdCiAgICBdCiB9">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
@@ -305,13 +305,13 @@ textarea{resize:vertical;min-height:70px}
 .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
 .danger{color:var(--danger)}
 
-/* Unlimited Event Countdown Modal Styles with Date Picker Icon Support */
+/* Fully Scrollable Event Countdown Modal Styles with Date Picker Icon Support */
 .countdown-modal-box {
   width: min(560px, 100%);
   max-height: 85vh;
   display: flex;
   flex-direction: column;
-  overflow: hidden; /* Prevent outer container scrollbars */
+  overflow-y: auto; /* Fully scrollable container so everything can be scrolled seamlessly */
 }
 .countdown-modal-box h2 {
   position: sticky;
@@ -320,7 +320,6 @@ textarea{resize:vertical;min-height:70px}
   z-index: 10;
   padding-bottom: 10px;
   margin: 0 0 16px 0;
-  flex-shrink: 0;
 }
 .countdown-form-section {
   flex-shrink: 0;
@@ -330,10 +329,6 @@ textarea{resize:vertical;min-height:70px}
   flex-direction: column;
   gap: 16px;
   margin-top: 15px;
-  overflow-y: auto; /* Scrollable section for the whole countdown list */
-  padding-right: 6px;
-  flex: 1;
-  min-height: 0;
 }
 .countdown-item-card {
   background: linear-gradient(135deg, #0f172a 100%, #1e1b4b 0%);
@@ -559,7 +554,7 @@ textarea{resize:vertical;min-height:70px}
   </div>
 </div>
 
-<!-- EVENT COUNTDOWN MODAL (With Event Name, Event Date DD/MM/YYYY & Calendar Icon Picker) -->
+<!-- EVENT COUNTDOWN MODAL (Fully Scrollable Container) -->
 <div class="modal-backdrop" id="countdownModal">
   <div class="modal countdown-modal-box">
     <h2>🎯 EVENT COUNTDOWN</h2>
@@ -857,76 +852,60 @@ applyTheme();render();
     }, 600);
   }
 
-  exploreAppBtn.addEventListener("click", hideSplashAndProceed);
-  skipSplashBtn.addEventListener("click", () => {
-    splashScreen.style.display = "none";
-    if (!auth.currentUser) {
-      welcomePage.classList.add("active");
-    }
-  });
+  exploreAppBtn.onclick = hideSplashAndProceed;
+  skipSplashBtn.onclick = hideSplashAndProceed;
 
-  getStartedBtn.addEventListener("click", () => {
+  getStartedBtn.onclick = () => {
     welcomePage.classList.remove("active");
     authSection.classList.add("active");
-  });
+  };
 
-  backToWelcomeBtn.addEventListener("click", () => {
+  backToWelcomeBtn.onclick = () => {
     authSection.classList.remove("active");
     welcomePage.classList.add("active");
-  });
+  };
 
+  let isSignUp = false;
   const authTitle = document.getElementById("authTitle");
   const authPrimaryBtn = document.getElementById("authPrimaryBtn");
   const toggleAuthBtn = document.getElementById("toggleAuthBtn");
   const toggleAuthMsg = document.getElementById("toggleAuthMsg");
-  const authEmail = document.getElementById("authEmail");
-  const authPassword = document.getElementById("authPassword");
 
-  let isSignUpMode = false;
-
-  toggleAuthBtn.addEventListener("click", (e) => {
+  toggleAuthBtn.onclick = (e) => {
     e.preventDefault();
-    isSignUpMode = !isSignUpMode;
-    if (isSignUpMode) {
-      authTitle.textContent = "Create an Account";
-      authPrimaryBtn.textContent = "Sign Up";
-      toggleAuthMsg.textContent = "Already have an account?";
-      toggleAuthBtn.textContent = "Log In";
-    } else {
-      authTitle.textContent = "Sign in to DailyFlow";
-      authPrimaryBtn.textContent = "Log In";
-      toggleAuthMsg.textContent = "Don't have an account?";
-      toggleAuthBtn.textContent = "Sign Up";
-    }
-  });
+    isSignUp = !isSignUp;
+    authTitle.textContent = isSignUp ? "Create a DailyFlow Account" : "Sign in to DailyFlow";
+    authPrimaryBtn.textContent = isSignUp ? "Sign Up" : "Log In";
+    toggleAuthMsg.textContent = isSignUp ? "Already have an account?" : "Don't have an account?";
+    toggleAuthBtn.textContent = isSignUp ? "Log In" : "Sign Up";
+  };
 
-  authPrimaryBtn.addEventListener("click", async () => {
-    const email = authEmail.value.trim();
-    const password = authPassword.value.trim();
-
+  authPrimaryBtn.onclick = async () => {
+    const email = document.getElementById("authEmail").value.trim();
+    const password = document.getElementById("authPassword").value.trim();
     if (!email || !password) {
       alert("Please fill in both email and password.");
       return;
     }
-
     try {
-      if (isSignUpMode) {
+      if (isSignUp) {
         await createUserWithEmailAndPassword(auth, email, password);
+        alert("Account created successfully!");
       } else {
         await signInWithEmailAndPassword(auth, email, password);
       }
     } catch (error) {
       alert(error.message);
     }
-  });
+  };
 
-  logoutBtn.addEventListener("click", async () => {
+  logoutBtn.onclick = async () => {
     try {
       await signOut(auth);
     } catch (error) {
       console.error(error);
     }
-  });
+  };
 
   onAuthStateChanged(auth, (user) => {
     if (user) {
@@ -936,7 +915,7 @@ applyTheme();render();
       mainApp.classList.add("active");
     } else {
       mainApp.classList.remove("active");
-      if (splashScreen.style.display === "none") {
+      if (splashScreen.style.display !== "none" && splashScreen.classList.contains("fade-out")) {
         welcomePage.classList.add("active");
       }
     }
