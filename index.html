@@ -227,5 +227,29 @@ darkStyle.textContent=`body.dark{--bg:#0f172a;--card:#172033;--text:#f1f5f9;--mu
 document.head.appendChild(darkStyle);
 applyTheme();render();
 </script>
+<!-- Firebase & Firestore Integration Script -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+  import { getFirestore, doc, setDoc, getDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  // Your Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyD6emOj7NK3UYBeAfuX3kdyZICb1ohYK4o",
+    authDomain: "dailyflow-app-191e7.firebaseapp.com",
+    projectId: "dailyflow-app-191e7",
+    storageBucket: "dailyflow-app-191e7.firebasestorage.app",
+    messagingSenderId: "991769469867",
+    appId: "1:991769469867:web:f4fb1c8a1ef6c19d2aa8ee",
+    measurementId: "G-YNRC1MWZRZ"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  console.log("Firebase Connected Successfully to DAILYFLOW!");
+</script>
 </body>
 </html>
