@@ -514,7 +514,7 @@ textarea{resize:vertical;min-height:70px}
   </div>
 </div>
 
-<!-- Unlimited Exam Countdowns Modal (Fixed DD/MM/YYYY placeholder & interactive input) -->
+<!-- Unlimited Exam Countdowns Modal (Strict DD/MM/YYYY text format input) -->
 <div class="modal-backdrop" id="countdownModal">
   <div class="modal countdown-modal-box">
     <h2>🎯 Animated Exam Countdowns</h2>
@@ -523,7 +523,7 @@ textarea{resize:vertical;min-height:70px}
         <input type="text" id="cdName" placeholder="e.g. DU Admission / KUET" required>
       </label>
       <label>Exam Date (DD/MM/YYYY)
-        <input type="text" id="cdDate" placeholder="DD/MM/YYYY" onfocus="this.type='date'" onblur="if(!this.value)this.type='text'" required>
+        <input type="text" id="cdDate" placeholder="DD/MM/YYYY" pattern="\d{2}/\d{2}/\d{4}" title="Please enter date in DD/MM/YYYY format" required>
       </label>
       <button type="submit" class="primary" style="margin-top: 4px;">Add Countdown Target</button>
     </form>
@@ -638,7 +638,7 @@ $("tasks").onclick=e=>{
   save();render();
 };
 
-/* Animated Countdown Modal Logic */
+/* Animated Countdown Modal Logic with DD/MM/YYYY Parsing */
 $("openCountdownModalBtn").onclick=()=>$("countdownModal").classList.add("show");
 $("closeCountdownModalBtn").onclick=()=>$("countdownModal").classList.remove("show");
 $("countdownModal").addEventListener("click",e=>{if(e.target===$("countdownModal"))$("countdownModal").classList.remove("show")});
@@ -646,11 +646,20 @@ $("countdownModal").addEventListener("click",e=>{if(e.target===$("countdownModal
 $("countdownForm").onsubmit=e=>{
   e.preventDefault();
   const name=$("cdName").value.trim();
-  const dateVal=$("cdDate").value; // YYYY-MM-DD format from date picker
-  if(!name || !dateVal) return;
-  countdowns.push({id:Date.now().toString(), name, date: dateVal});
+  const dateStr=$("cdDate").value.trim(); // Format expected: DD/MM/YYYY
+  if(!name || !dateStr) return;
+
+  const parts = dateStr.split('/');
+  if(parts.length !== 3) {
+    alert("Please write the date in correct DD/MM/YYYY format (e.g., 25/12/2026)");
+    return;
+  }
+  const day = parts[0], month = parts[1], year = parts[2];
+  const isoDateVal = `${year}-${month}-${day}`; // Convert to YYYY-MM-DD for backend countdown calc
+
+  countdowns.push({id:Date.now().toString(), name, date: isoDateVal});
   saveCD();
-  $("cdName").value=""; $("cdDate").value=""; $("cdDate").type="text";
+  $("cdName").value=""; $("cdDate").value="";
   renderCountdowns();
 };
 
