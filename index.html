@@ -5,22 +5,24 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DAILYFLOW — Professional Daily Planner</title>
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
 :root{
   --bg:#f8fafc; --card:#ffffff; --text:#0f172a; --muted:#64748b;
   --line:#e2e8f0; --accent:#6366f1; --accent-hover:#4f46e5;
-  --success:#22c55e; --danger:#ef4444; --shadow:0 10px 30px rgba(15,23,42,0.06);
-  --radius:16px;
+  --success:#22c55e; --danger:#ef4444; --shadow:0 15px 35px rgba(15,23,42,0.08);
+  --radius:20px;
 }
 *{box-sizing:border-box}
-body{margin:0;font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
 button,input,textarea,select{font:inherit}
 button{cursor:pointer;border:0}
 
-/* Page Container Structure */
+/* Layer Management */
 .page-layer {
   display: none;
   max-width: 440px;
-  margin: 70px auto;
+  margin: 60px auto;
   padding: 35px 30px;
   border: 1px solid var(--line);
   border-radius: 24px;
@@ -30,6 +32,125 @@ button{cursor:pointer;border:0}
 }
 .page-layer.active {
   display: block;
+}
+
+/* Premium Opening / Splash Intro Screen */
+#splashScreen {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at center, #1e1b4b 0%, #0f172a 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+  z-index: 999;
+  transition: opacity 0.6s ease, visibility 0.6s ease;
+  overflow-y: auto;
+}
+#splashScreen.fade-out {
+  opacity: 0;
+  visibility: hidden;
+}
+.splash-content {
+  max-width: 520px;
+  width: 100%;
+  text-align: center;
+  position: relative;
+}
+.splash-brand {
+  font-size: clamp(38px, 7vw, 62px);
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -1.5px;
+  margin: 0 0 8px 0;
+  background: linear-gradient(135deg, #ffffff 30%, #818cf8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 4px 25px rgba(99,102,241,0.3));
+}
+.splash-creator-tag {
+  display: inline-block;
+  background: rgba(99,102,241,0.15);
+  border: 1px solid rgba(129,140,248,0.3);
+  color: #a5b4fc;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 6px 16px;
+  border-radius: 30px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 24px;
+}
+.splash-desc {
+  color: #cbd5e1;
+  font-size: 15px;
+  line-height: 1.7;
+  margin-bottom: 24px;
+  font-weight: 400;
+}
+.splash-quote-box {
+  background: rgba(255, 255, 255, 0.04);
+  border-left: 4px solid var(--accent);
+  padding: 16px 20px;
+  border-radius: 0 12px 12px 0;
+  text-align: left;
+  margin-bottom: 35px;
+  backdrop-filter: blur(5px);
+}
+.splash-quote-text {
+  color: #f1f5f9;
+  font-size: 14px;
+  font-style: italic;
+  margin: 0;
+  line-height: 1.6;
+}
+.splash-quote-author {
+  color: #94a3b8;
+  font-size: 11px;
+  margin-top: 6px;
+  display: block;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.splash-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.splash-explore-btn {
+  background: linear-gradient(135deg, var(--accent), #8b5cf6);
+  color: white;
+  padding: 14px 24px;
+  font-size: 15px;
+  font-weight: 700;
+  border-radius: 14px;
+  box-shadow: 0 10px 25px rgba(99,102,241,0.4);
+  transition: transform 0.2s, box-shadow 0.2s;
+  width: 100%;
+}
+.splash-explore-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px rgba(99,102,241,0.5);
+}
+.skip-corner-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #cbd5e1;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 20px;
+  transition: 0.2s;
+  cursor: pointer;
+}
+.skip-corner-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
 }
 
 /* Welcome Page Design */
@@ -69,6 +190,63 @@ button{cursor:pointer;border:0}
   margin-top: 30px;
   letter-spacing: 0.8px;
   text-transform: uppercase;
+}
+
+/* Enhanced Authentication / Login Page Styling */
+.auth-card-header {
+  margin-bottom: 22px;
+}
+.auth-badge {
+  display: inline-block;
+  background: #eef2ff;
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.auth-title {
+  font-size: 22px;
+  font-weight: 800;
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+.auth-desc {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.form-group-wrap {
+  display: grid;
+  gap: 14px;
+  text-align: left;
+  margin-bottom: 20px;
+}
+.form-group-wrap label {
+  font-size: 12px;
+  font-weight: 700;
+  display: grid;
+  gap: 6px;
+  color: var(--text);
+}
+.form-group-wrap input {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px 14px;
+  outline: none;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  transition: all 0.2s;
+}
+.form-group-wrap input:focus {
+  border-color: var(--accent);
+  background: var(--card);
+  box-shadow: 0 0 0 4px rgba(99,102,241,0.1);
 }
 
 /* Main App Layout */
@@ -132,21 +310,44 @@ textarea{resize:vertical;min-height:70px}
 </head>
 <body>
 
+<!-- PREMIUM OPENING / SPLASH SCREEN -->
+<div id="splashScreen">
+  <button class="skip-corner-btn" id="skipSplashBtn">Skip Intro →</button>
+  <div class="splash-content">
+    <h1 class="splash-brand">DAILYFLOW</h1>
+    <div class="splash-creator-tag">Crafted by MD Nafis Ittesam</div>
+    <p class="splash-desc">
+      Welcome to your ultimate productivity companion. Designed to transform chaotic schedules into structured, stress-free daily achievements with 100% data privacy.
+    </p>
+    <div class="splash-quote-box">
+      <p class="splash-quote-text">"Success isn’t always about greatness. It’s about consistency. Consistent hard work leads to success. Greatness will come naturally."</p>
+      <span class="splash-quote-author">— Daily Motivational Flow</span>
+    </div>
+    <div class="splash-actions">
+      <button class="splash-explore-btn" id="exploreAppBtn">Get Started Now</button>
+    </div>
+  </div>
+</div>
+
 <!-- PAGE 1: Welcome Page -->
-<div id="welcomePage" class="page-layer active">
+<div id="welcomePage" class="page-layer">
   <div class="welcome-logo">✓</div>
   <h2 class="welcome-title">Welcome to DAILY FLOW</h2>
-  <p class="welcome-subtitle">Plan your daily agenda effortlessly, monitor your productivity, and keep your schedule securely organized.</p>
-  <button id="getStartedBtn" class="primary">Get Started</button>
+  <p class="welcome-subtitle">Plan your daily agenda effortlessly, monitor your productivity, and keep your schedule securely organized in your personal account.</p>
+  <button id="getStartedBtn" class="primary">Proceed to Login</button>
   <div>
     <span class="creator-pill">MADE BY MD NAFIS ITTESAM</span>
   </div>
 </div>
 
-<!-- PAGE 2: Authentication / Login Page -->
+<!-- PAGE 2: Enhanced Authentication / Login Page -->
 <div id="authSection" class="page-layer">
-  <h2 id="authTitle" style="margin-top:0;">Sign in to DailyFlow</h2>
-  <div style="display:grid; gap:12px; text-align: left; margin-top: 15px;">
+  <div class="auth-card-header">
+    <span class="auth-badge">Secure Portal</span>
+    <h2 class="auth-title" id="authTitle">Sign in to DailyFlow</h2>
+    <div class="auth-desc">Enter your credentials to access your personal dashboard</div>
+  </div>
+  <div class="form-group-wrap">
     <label>Email Address
       <input type="email" id="authEmail" placeholder="name@example.com" required>
     </label>
@@ -154,12 +355,12 @@ textarea{resize:vertical;min-height:70px}
       <input type="password" id="authPassword" placeholder="••••••••" required>
     </label>
   </div>
-  <button id="authPrimaryBtn" class="primary" style="margin-top: 20px;">Log In</button>
-  <p style="margin-top: 16px; font-size: 13px; color: var(--muted);">
+  <button id="authPrimaryBtn" class="primary">Log In</button>
+  <p style="margin-top: 18px; font-size: 13px; color: var(--muted);">
     <span id="toggleAuthMsg">Don't have an account?</span> 
-    <a href="#" id="toggleAuthBtn" style="color: var(--accent); text-decoration: none; font-weight: 600;">Sign Up</a>
+    <a href="#" id="toggleAuthBtn" style="color: var(--accent); text-decoration: none; font-weight: 700;">Sign Up</a>
   </p>
-  <button id="backToWelcomeBtn" style="background:none; color:var(--muted); font-size:12px; margin-top:8px; text-decoration:underline;">← Back to home</button>
+  <button id="backToWelcomeBtn" style="background:none; color:var(--muted); font-size:12px; margin-top:10px; text-decoration:underline; cursor:pointer;">← Back to welcome</button>
 </div>
 
 <!-- PAGE 3: Main App Dashboard -->
@@ -336,7 +537,7 @@ document.head.appendChild(darkStyle);
 applyTheme();render();
 </script>
 
-<!-- Firebase Authentication Script & Router Flow -->
+<!-- Firebase Authentication Script & Navigation Flow Control -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
   import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
@@ -356,13 +557,37 @@ applyTheme();render();
   const auth = getAuth(app);
   const db = getFirestore(app);
 
+  const splashScreen = document.getElementById("splashScreen");
   const welcomePage = document.getElementById("welcomePage");
   const authSection = document.getElementById("authSection");
   const mainApp = document.getElementById("mainApp");
   
+  const exploreAppBtn = document.getElementById("exploreAppBtn");
+  const skipSplashBtn = document.getElementById("skipSplashBtn");
   const getStartedBtn = document.getElementById("getStartedBtn");
   const backToWelcomeBtn = document.getElementById("backToWelcomeBtn");
   const logoutBtn = document.getElementById("logoutBtn");
+
+  function hideSplashAndProceed() {
+    splashScreen.classList.add("fade-out");
+    setTimeout(() => {
+      splashScreen.style.display = "none";
+      if (!auth.currentUser) {
+        welcomePage.classList.add("active");
+      }
+    }, 600);
+  }
+
+  exploreAppBtn.addEventListener("click", hideSplashAndProceed);
+  skipSplashBtn.addEventListener("click", () => {
+    splashScreen.classList.add("fade-out");
+    setTimeout(() => {
+      splashScreen.style.display = "none";
+      if (!auth.currentUser) {
+        authSection.classList.add("active");
+      }
+    }, 600);
+  });
 
   getStartedBtn.addEventListener("click", () => {
     welcomePage.classList.remove("active");
@@ -376,6 +601,7 @@ applyTheme();render();
 
   onAuthStateChanged(auth, (user) => {
     if (user) {
+      splashScreen.style.display = "none";
       welcomePage.classList.remove("active");
       authSection.classList.remove("active");
       mainApp.classList.add("active");
