@@ -61,6 +61,17 @@ textarea{resize:vertical;min-height:75px}
 </head>
 <body>
 <div class="app">
+  <!-- Auth Section UI -->
+<div id="authSection" style="max-width: 400px; margin: 20px auto; padding: 20px; border: 1px solid #ccc; border-radius: 8px; text-align: center;">
+  <h2 id="authTitle">Login to DailyFlow</h2>
+  <input type="email" id="authEmail" placeholder="Email" style="width: 90%; padding: 8px; margin: 8px 0;" required><br>
+  <input type="password" id="authPassword" placeholder="Password" style="width: 90%; padding: 8px; margin: 8px 0;" required><br>
+  <button id="authPrimaryBtn" style="padding: 8px 16px; margin-top: 10px; cursor: pointer;">Log In</button>
+  <p style="margin-top: 15px; font-size: 14px;">
+    <span id="toggleAuthMsg">Don't have an account?</span> 
+    <a href="#" id="toggleAuthBtn" style="color: blue; text-decoration: underline;">Sign Up</a>
+  </p>
+</div>
 <header>
   <div class="brand">
     <div class="logo">✓</div>
@@ -250,6 +261,55 @@ applyTheme();render();
   const db = getFirestore(app);
 
   console.log("Firebase Connected Successfully to DAILYFLOW!");
+  // DOM Elements
+  const authEmail = document.getElementById("authEmail");
+  const authPassword = document.getElementById("authPassword");
+  const authPrimaryBtn = document.getElementById("authPrimaryBtn");
+  const toggleAuthBtn = document.getElementById("toggleAuthBtn");
+  const toggleAuthMsg = document.getElementById("toggleAuthMsg");
+  const authTitle = document.getElementById("authTitle");
+
+  let isSignUpMode = false;
+
+  // Toggle between Login and Sign Up
+  toggleAuthBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    isSignUpMode = !isSignUpMode;
+    if (isSignUpMode) {
+      authTitle.innerText = "Create DailyFlow Account";
+      authPrimaryBtn.innerText = "Sign Up";
+      toggleAuthMsg.innerText = "Already have an account?";
+      toggleAuthBtn.innerText = "Log In";
+    } else {
+      authTitle.innerText = "Login to DailyFlow";
+      authPrimaryBtn.innerText = "Log In";
+      toggleAuthMsg.innerText = "Don't have an account?";
+      toggleAuthBtn.innerText = "Sign Up";
+    }
+  });
+
+  // Handle Authentication Action
+  authPrimaryBtn.addEventListener("click", async () => {
+    const email = authEmail.value;
+    const password = authPassword.value;
+
+    if (!email || !password) {
+      alert("Please enter both email and password.");
+      return;
+    }
+
+    try {
+      if (isSignUpMode) {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        alert("Account created successfully! Welcome " + userCredential.user.email);
+      } else {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        alert("Logged in successfully! Welcome " + userCredential.user.email);
+      }
+    } catch (error) {
+      alert("Authentication Error: " + error.message);
+    }
+  });
 </script>
 </body>
 </html>
