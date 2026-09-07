@@ -261,7 +261,7 @@ header{display:flex;align-items:center;justify-content:space-between;gap:15px;ma
 .logo{width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg, var(--accent), #8b5cf6);color:#fff;display:grid;place-items:center;font-size:22px;font-weight:800}
 h1{font-size:24px;margin:0;letter-spacing:-0.5px}.subtitle{color:var(--muted);font-size:12px;margin-top:2px}
 .header-actions{display:flex;align-items:center;gap:10px}
-.icon-btn{width:40px;height:40px;border-radius:12px;background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow);font-size:16px;color:var(--text);display:grid;place-items:center;transition:0.2s}
+.icon-btn{height:40px;border-radius:12px;background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow);font-size:15px;color:var(--text);display:flex;align-items:center;gap:6px;padding:0 14px;font-weight:700;transition:0.2s}
 .icon-btn:hover{background:var(--bg)}
 .logout-btn{background:#fef2f2;color:var(--danger);border:1px solid #fee2e2;border-radius:12px;padding:0 14px;height:40px;font-weight:700;font-size:12px;transition:0.2s}
 .logout-btn:hover{background:#fee2e2}
@@ -305,31 +305,31 @@ textarea{resize:vertical;min-height:70px}
 .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
 .danger{color:var(--danger)}
 
-/* Animated Multi Countdown Styles */
+/* Enhanced Large Animated Countdown Styles with Up-Down Motion & Pure White Font */
 .countdown-modal-box {
-  width: min(520px, 100%);
+  width: min(560px, 100%);
   max-height: 85vh;
   overflow-y: auto;
 }
 .countdown-list-wrap {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
   margin-top: 15px;
-  max-height: 320px;
+  max-height: 380px;
   overflow-y: auto;
   padding-right: 4px;
 }
 .countdown-item-card {
-  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
-  border: 1px solid rgba(139, 92, 246, 0.4);
-  border-radius: 16px;
-  padding: 16px;
-  color: #fff;
+  background: linear-gradient(135deg, #0f172a 100%, #1e1b4b 0%);
+  border: 1.5px solid rgba(139, 92, 246, 0.4);
+  border-radius: 18px;
+  padding: 18px;
+  color: #ffffff;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  box-shadow: 0 10px 25px rgba(30, 27, 75, 0.3);
+  gap: 14px;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.4);
 }
 .countdown-item-top {
   display: flex;
@@ -337,48 +337,49 @@ textarea{resize:vertical;min-height:70px}
   align-items: center;
 }
 .countdown-item-title {
-  font-weight: 700;
-  font-size: 15px;
-  color: #c084fc;
+  font-weight: 800;
+  font-size: 16px;
+  color: #f3f4f6;
   letter-spacing: -0.3px;
 }
 
-/* Animated Flip-Digit Style Timer Container */
+/* Larger Flip-Digit Style Timer Container */
 .countdown-timer-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
+  gap: 10px;
   text-align: center;
 }
 .cd-box {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 10px;
-  padding: 8px 4px;
-  backdrop-filter: blur(5px);
-  animation: pulseGlow 2s infinite ease-in-out;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 12px;
+  padding: 12px 6px;
+  backdrop-filter: blur(8px);
+  animation: bounceUpDown 2s infinite ease-in-out;
 }
 .cd-digit {
-  font-size: 18px;
+  font-size: 24px;
   font-weight: 800;
-  color: #38bdf8;
+  color: #ffffff; /* Pure white font */
   display: block;
   font-variant-numeric: tabular-nums;
-  transition: transform 0.2s ease;
+  text-shadow: 0 2px 10px rgba(255, 255, 255, 0.3);
 }
 .cd-label {
-  font-size: 9px;
-  color: #94a3b8;
+  font-size: 10px;
+  color: #cbd5e1;
   text-transform: uppercase;
-  letter-spacing: 0.8px;
-  margin-top: 2px;
+  letter-spacing: 1px;
+  margin-top: 4px;
   display: block;
-  font-weight: 600;
+  font-weight: 700;
 }
 
-@keyframes pulseGlow {
-  0%, 100% { border-color: rgba(139, 92, 246, 0.4); }
-  50% { border-color: rgba(56, 189, 248, 0.7); }
+/* Up and Down Animation */
+@keyframes bounceUpDown {
+  0%, 100% { transform: translateY(0); border-color: rgba(139, 92, 246, 0.4); }
+  50% { transform: translateY(-4px); border-color: rgba(255, 255, 255, 0.5); }
 }
 
 @media(max-width:650px){
@@ -450,9 +451,12 @@ textarea{resize:vertical;min-height:70px}
     <div><h1>DAILYFLOW</h1><div class="subtitle">Personal Productivity Workspace</div></div>
   </div>
   <div class="header-actions">
-    <!-- Countdown Corner Button -->
-    <button class="icon-btn" id="openCountdownModalBtn" title="Exam Countdowns">⏳</button>
-    <button class="icon-btn" id="themeBtn" title="Toggle theme">☾</button>
+    <!-- Countdown Corner Button with text beside logo -->
+    <button class="icon-btn" id="openCountdownModalBtn" title="Exam Countdowns">
+      <span>⏳</span>
+      <span>Countdown</span>
+    </button>
+    <button class="icon-btn" id="themeBtn" title="Toggle theme" style="padding: 0 12px;">☾</button>
     <button class="logout-btn" id="logoutBtn">Log out</button>
   </div>
 </header>
@@ -510,7 +514,7 @@ textarea{resize:vertical;min-height:70px}
   </div>
 </div>
 
-<!-- Unlimited Exam Countdowns Modal -->
+<!-- Unlimited Exam Countdowns Modal (DD/MM/YYYY Format & Rat 12:00 AM target) -->
 <div class="modal-backdrop" id="countdownModal">
   <div class="modal countdown-modal-box">
     <h2>🎯 Animated Exam Countdowns</h2>
@@ -518,8 +522,8 @@ textarea{resize:vertical;min-height:70px}
       <label>Exam Name
         <input type="text" id="cdName" placeholder="e.g. DU Admission / KUET" required>
       </label>
-      <label>Exam Date & Time
-        <input type="datetime-local" id="cdDate" required>
+      <label>Exam Date (DD/MM/YYYY)
+        <input type="date" id="cdDate" required>
       </label>
       <button type="submit" class="primary" style="margin-top: 4px;">Add Countdown Target</button>
     </form>
@@ -538,7 +542,7 @@ textarea{resize:vertical;min-height:70px}
 <script>
 const KEY="dailyflow_tasks_v2";
 const THEME="dailyflow_theme_v2";
-const CD_KEY="dailyflow_countdowns_v2";
+const CD_KEY="dailyflow_countdowns_v3";
 
 let tasks=JSON.parse(localStorage.getItem(KEY)||"[]");
 let countdowns=JSON.parse(localStorage.getItem(CD_KEY)||"[]");
@@ -642,9 +646,9 @@ $("countdownModal").addEventListener("click",e=>{if(e.target===$("countdownModal
 $("countdownForm").onsubmit=e=>{
   e.preventDefault();
   const name=$("cdName").value.trim();
-  const date=$("cdDate").value;
-  if(!name || !date) return;
-  countdowns.push({id:Date.now().toString(), name, date});
+  const dateVal=$("cdDate").value; // YYYY-MM-DD format from date picker
+  if(!name || !dateVal) return;
+  countdowns.push({id:Date.now().toString(), name, date: dateVal});
   saveCD();
   $("cdName").value=""; $("cdDate").value="";
   renderCountdowns();
@@ -676,17 +680,18 @@ function renderCountdowns(){
   });
 }
 
-function deleteCountdown(id){
+window.deleteCountdown = function(id){
   countdowns=countdowns.filter(x=>x.id!==id);
   saveCD();
   renderCountdowns();
-}
+};
 
 function updateAllCountdowns(){
   countdowns.forEach(item=>{
-    const targetTime=new Date(item.date).getTime();
-    const now=new Date().getTime();
-    const timeLeft=targetTime - now;
+    // Set target time explicitly to rat 12:00 AM (00:00:00) of the chosen date
+    const targetTime = new Date(item.date + "T00:00:00").getTime();
+    const now = new Date().getTime();
+    const timeLeft = targetTime - now;
 
     const dEl=$(`cd-days-${item.id}`);
     const hEl=$(`cd-hours-${item.id}`);
@@ -695,20 +700,20 @@ function updateAllCountdowns(){
 
     if(!dEl) return;
 
-    if(timeLeft<0){
-      dEl.parentElement.parentElement.innerHTML=`<div style="text-align:center;color:#38bdf8;font-weight:700;padding:6px;font-size:13px;">🎉 Exam time has arrived! All the best!</div>`;
+    if(timeLeft < 0){
+      dEl.parentElement.parentElement.parentElement.innerHTML=`<div style="text-align:center;color:#38bdf8;padding:12px;font-size:13px;line-height:1.5;"><b><i>Your countdown has come to an end, and your long-awaited day has finally arrived.</i></b></div>`;
       return;
     }
 
-    const days=String(Math.floor(timeLeft/(1000*60*60*24))).padStart(2,'0');
-    const hours=String(Math.floor((timeLeft%(1000*60*60*24))/(1000*60*60))).padStart(2,'0');
-    const minutes=String(Math.floor((timeLeft%(1000*60*60))/(1000*60))).padStart(2,'0');
-    const seconds=String(Math.floor((timeLeft%(1000*60))/1000)).padStart(2,'0');
+    const days = String(Math.floor(timeLeft / (1000 * 60 * 60 * 24)));
+    const hours = String(Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))).padStart(2,'0');
+    const minutes = String(Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60))).padStart(2,'0');
+    const seconds = String(Math.floor((timeLeft % (1000 * 60)) / 1000)).padStart(2,'0');
 
-    dEl.textContent=days;
-    hEl.textContent=hours;
-    mEl.textContent=minutes;
-    sEl.textContent=seconds;
+    dEl.textContent = days;
+    hEl.textContent = hours;
+    mEl.textContent = minutes;
+    sEl.textContent = seconds;
   });
 }
 
