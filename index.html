@@ -514,7 +514,7 @@ textarea{resize:vertical;min-height:70px}
   </div>
 </div>
 
-<!-- Unlimited Exam Countdowns Modal (DD/MM/YYYY Format & Rat 12:00 AM target) -->
+<!-- Unlimited Exam Countdowns Modal (Fixed DD/MM/YYYY placeholder & interactive input) -->
 <div class="modal-backdrop" id="countdownModal">
   <div class="modal countdown-modal-box">
     <h2>🎯 Animated Exam Countdowns</h2>
@@ -523,7 +523,7 @@ textarea{resize:vertical;min-height:70px}
         <input type="text" id="cdName" placeholder="e.g. DU Admission / KUET" required>
       </label>
       <label>Exam Date (DD/MM/YYYY)
-        <input type="date" id="cdDate" required>
+        <input type="text" id="cdDate" placeholder="DD/MM/YYYY" onfocus="this.type='date'" onblur="if(!this.value)this.type='text'" required>
       </label>
       <button type="submit" class="primary" style="margin-top: 4px;">Add Countdown Target</button>
     </form>
@@ -650,7 +650,7 @@ $("countdownForm").onsubmit=e=>{
   if(!name || !dateVal) return;
   countdowns.push({id:Date.now().toString(), name, date: dateVal});
   saveCD();
-  $("cdName").value=""; $("cdDate").value="";
+  $("cdName").value=""; $("cdDate").value=""; $("cdDate").type="text";
   renderCountdowns();
 };
 
@@ -688,7 +688,6 @@ window.deleteCountdown = function(id){
 
 function updateAllCountdowns(){
   countdowns.forEach(item=>{
-    // Set target time explicitly to rat 12:00 AM (00:00:00) of the chosen date
     const targetTime = new Date(item.date + "T00:00:00").getTime();
     const now = new Date().getTime();
     const timeLeft = targetTime - now;
