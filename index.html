@@ -308,9 +308,10 @@ textarea{resize:vertical;min-height:70px}
 /* Unlimited Event Countdown Modal Styles with Date Picker Icon Support */
 .countdown-modal-box {
   width: min(560px, 100%);
-  max-height: 90vh;
+  max-height: 85vh;
   display: flex;
   flex-direction: column;
+  overflow: hidden; /* Prevent outer container scrollbars */
 }
 .countdown-modal-box h2 {
   position: sticky;
@@ -319,15 +320,20 @@ textarea{resize:vertical;min-height:70px}
   z-index: 10;
   padding-bottom: 10px;
   margin: 0 0 16px 0;
+  flex-shrink: 0;
+}
+.countdown-form-section {
+  flex-shrink: 0;
 }
 .countdown-list-wrap {
   display: flex;
   flex-direction: column;
   gap: 16px;
   margin-top: 15px;
-  max-height: 50vh;
-  overflow-y: auto;
-  padding-right: 4px;
+  overflow-y: auto; /* Scrollable section for the whole countdown list */
+  padding-right: 6px;
+  flex: 1;
+  min-height: 0;
 }
 .countdown-item-card {
   background: linear-gradient(135deg, #0f172a 100%, #1e1b4b 0%);
@@ -557,26 +563,28 @@ textarea{resize:vertical;min-height:70px}
 <div class="modal-backdrop" id="countdownModal">
   <div class="modal countdown-modal-box">
     <h2>🎯 EVENT COUNTDOWN</h2>
-    <form id="countdownForm" class="form-grid">
-      <label>Event Name
-        <input type="text" id="cdName" placeholder="e.g. DU Admission / KUET" required>
-      </label>
-      <label>Event Date (DD/MM/YYYY)
-        <div class="date-input-wrapper">
-          <input type="text" id="cdDate" placeholder="DD/MM/YYYY" maxlength="10" autocomplete="off" required>
-          <input type="date" id="cdDatePicker" title="Select date from calendar">
-          <span class="calendar-icon-btn">📅</span>
-        </div>
-      </label>
-      <button type="submit" class="primary" style="margin-top: 4px;">Add Countdown Target</button>
-    </form>
+    <div class="countdown-form-section">
+      <form id="countdownForm" class="form-grid">
+        <label>Event Name
+          <input type="text" id="cdName" placeholder="e.g. DU Admission / KUET" required>
+        </label>
+        <label>Event Date (DD/MM/YYYY)
+          <div class="date-input-wrapper">
+            <input type="text" id="cdDate" placeholder="DD/MM/YYYY" maxlength="10" autocomplete="off" required>
+            <input type="date" id="cdDatePicker" title="Select date from calendar">
+            <span class="calendar-icon-btn">📅</span>
+          </div>
+        </label>
+        <button type="submit" class="primary" style="margin-top: 4px;">Add Countdown Target</button>
+      </form>
+      <div style="margin-top: 15px; font-weight: 700; font-size: 14px;">Active Countdowns:</div>
+    </div>
 
-    <div style="margin-top: 20px; font-weight: 700; font-size: 14px;">Active Countdowns:</div>
     <div class="countdown-list-wrap" id="countdownListContainer">
       <!-- Dynamic countdown cards load here -->
     </div>
 
-    <div class="modal-actions" style="margin-top: 20px;">
+    <div class="modal-actions" style="margin-top: 15px; flex-shrink: 0;">
       <button type="button" class="secondary" id="closeCountdownModalBtn">Close</button>
     </div>
   </div>
@@ -832,7 +840,7 @@ applyTheme();render();
   const welcomePage = document.getElementById("welcomePage");
   const authSection = document.getElementById("authSection");
   const mainApp = document.getElementById("mainApp");
-  
+   
   const exploreAppBtn = document.getElementById("exploreAppBtn");
   const skipSplashBtn = document.getElementById("skipSplashBtn");
   const getStartedBtn = document.getElementById("getStartedBtn");
@@ -851,13 +859,10 @@ applyTheme();render();
 
   exploreAppBtn.addEventListener("click", hideSplashAndProceed);
   skipSplashBtn.addEventListener("click", () => {
-    splashScreen.classList.add("fade-out");
-    setTimeout(() => {
-      splashScreen.style.display = "none";
-      if (!auth.currentUser) {
-        welcomePage.classList.add("active");
-      }
-    }, 600);
+    splashScreen.style.display = "none";
+    if (!auth.currentUser) {
+      welcomePage.classList.add("active");
+    }
   });
 
   getStartedBtn.addEventListener("click", () => {
@@ -870,12 +875,12 @@ applyTheme();render();
     welcomePage.classList.add("active");
   });
 
+  const authTitle = document.getElementById("authTitle");
   const authPrimaryBtn = document.getElementById("authPrimaryBtn");
-  const authEmail = document.getElementById("authEmail");
-  const authPassword = document.getElementById("authPassword");
   const toggleAuthBtn = document.getElementById("toggleAuthBtn");
   const toggleAuthMsg = document.getElementById("toggleAuthMsg");
-  const authTitle = document.getElementById("authTitle");
+  const authEmail = document.getElementById("authEmail");
+  const authPassword = document.getElementById("authPassword");
 
   let isSignUpMode = false;
 
@@ -883,7 +888,7 @@ applyTheme();render();
     e.preventDefault();
     isSignUpMode = !isSignUpMode;
     if (isSignUpMode) {
-      authTitle.textContent = "Create Account";
+      authTitle.textContent = "Create an Account";
       authPrimaryBtn.textContent = "Sign Up";
       toggleAuthMsg.textContent = "Already have an account?";
       toggleAuthBtn.textContent = "Log In";
@@ -900,14 +905,13 @@ applyTheme();render();
     const password = authPassword.value.trim();
 
     if (!email || !password) {
-      alert("Please enter both email and password.");
+      alert("Please fill in both email and password.");
       return;
     }
 
     try {
       if (isSignUpMode) {
         await createUserWithEmailAndPassword(auth, email, password);
-        alert("Account created successfully!");
       } else {
         await signInWithEmailAndPassword(auth, email, password);
       }
@@ -925,15 +929,16 @@ applyTheme();render();
   });
 
   onAuthStateChanged(auth, (user) => {
-    splashScreen.style.display = "none";
-    welcomePage.classList.remove("active");
-    authSection.classList.remove("active");
-
     if (user) {
+      splashScreen.style.display = "none";
+      welcomePage.classList.remove("active");
+      authSection.classList.remove("active");
       mainApp.classList.add("active");
     } else {
-      mainApp.classList.remove("mainApp") || mainApp.classList.remove("active");
-      welcomePage.classList.add("active");
+      mainApp.classList.remove("active");
+      if (splashScreen.style.display === "none") {
+        welcomePage.classList.add("active");
+      }
     }
   });
 </script>
