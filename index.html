@@ -312,6 +312,14 @@ textarea{resize:vertical;min-height:70px}
   display: flex;
   flex-direction: column;
 }
+.countdown-modal-box h2 {
+  position: sticky;
+  top: 0;
+  background: var(--card);
+  z-index: 10;
+  padding-bottom: 10px;
+  margin: 0 0 16px 0;
+}
 .countdown-list-wrap {
   display: flex;
   flex-direction: column;
@@ -847,7 +855,7 @@ applyTheme();render();
     setTimeout(() => {
       splashScreen.style.display = "none";
       if (!auth.currentUser) {
-        authSection.classList.add("active");
+        welcomePage.classList.add("active");
       }
     }, 600);
   });
@@ -862,20 +870,9 @@ applyTheme();render();
     welcomePage.classList.add("active");
   });
 
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      splashScreen.style.display = "none";
-      welcomePage.classList.remove("active");
-      authSection.classList.remove("active");
-      mainApp.classList.add("active");
-    } else {
-      mainApp.classList.remove("active");
-    }
-  });
-
+  const authPrimaryBtn = document.getElementById("authPrimaryBtn");
   const authEmail = document.getElementById("authEmail");
   const authPassword = document.getElementById("authPassword");
-  const authPrimaryBtn = document.getElementById("authPrimaryBtn");
   const toggleAuthBtn = document.getElementById("toggleAuthBtn");
   const toggleAuthMsg = document.getElementById("toggleAuthMsg");
   const authTitle = document.getElementById("authTitle");
@@ -886,21 +883,21 @@ applyTheme();render();
     e.preventDefault();
     isSignUpMode = !isSignUpMode;
     if (isSignUpMode) {
-      authTitle.innerText = "Create DailyFlow Account";
-      authPrimaryBtn.innerText = "Sign Up";
-      toggleAuthMsg.innerText = "Already have an account?";
-      toggleAuthBtn.innerText = "Log In";
+      authTitle.textContent = "Create Account";
+      authPrimaryBtn.textContent = "Sign Up";
+      toggleAuthMsg.textContent = "Already have an account?";
+      toggleAuthBtn.textContent = "Log In";
     } else {
-      authTitle.innerText = "Sign in to DailyFlow";
-      authPrimaryBtn.innerText = "Log In";
-      toggleAuthMsg.innerText = "Don't have an account?";
-      toggleAuthBtn.innerText = "Sign Up";
+      authTitle.textContent = "Sign in to DailyFlow";
+      authPrimaryBtn.textContent = "Log In";
+      toggleAuthMsg.textContent = "Don't have an account?";
+      toggleAuthBtn.textContent = "Sign Up";
     }
   });
 
   authPrimaryBtn.addEventListener("click", async () => {
-    const email = authEmail.value;
-    const password = authPassword.value;
+    const email = authEmail.value.trim();
+    const password = authPassword.value.trim();
 
     if (!email || !password) {
       alert("Please enter both email and password.");
@@ -915,18 +912,28 @@ applyTheme();render();
         await signInWithEmailAndPassword(auth, email, password);
       }
     } catch (error) {
-      alert("Authentication Error: " + error.message);
+      alert(error.message);
     }
   });
 
   logoutBtn.addEventListener("click", async () => {
     try {
       await signOut(auth);
-      mainApp.classList.remove("active");
-      welcomePage.classList.add("active");
-      alert("Logged out successfully!");
     } catch (error) {
-      alert("Error logging out: " + error.message);
+      console.error(error);
+    }
+  });
+
+  onAuthStateChanged(auth, (user) => {
+    splashScreen.style.display = "none";
+    welcomePage.classList.remove("active");
+    authSection.classList.remove("active");
+
+    if (user) {
+      mainApp.classList.add("active");
+    } else {
+      mainApp.classList.remove("mainApp") || mainApp.classList.remove("active");
+      welcomePage.classList.add("active");
     }
   });
 </script>
