@@ -60,7 +60,7 @@ textarea{resize:vertical;min-height:75px}
 </style>
 </head>
 <body>
-<div class="app">
+<div class="app" id="mainApp" style="display: none;">
   <!-- Auth Section UI -->
 <div id="authSection" style="max-width: 400px; margin: 20px auto; padding: 20px; border: 1px solid #ccc; border-radius: 8px; text-align: center;">
   <h2 id="authTitle">Login to DailyFlow</h2>
@@ -261,6 +261,18 @@ applyTheme();render();
   const db = getFirestore(app);
 
   console.log("Firebase Connected Successfully to DAILYFLOW!");
+ const mainApp = document.getElementById("mainApp");
+const authSection = document.getElementById("authSection");
+
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    authSection.style.display = "none";
+    mainApp.style.display = "block";
+  } else {
+    authSection.style.display = "block";
+    mainApp.style.display = "none";
+  }
+});
   // DOM Elements
   const authEmail = document.getElementById("authEmail");
   const authPassword = document.getElementById("authPassword");
