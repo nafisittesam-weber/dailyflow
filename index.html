@@ -452,7 +452,7 @@ textarea{resize:vertical;min-height:70px}
   </div>
   <div class="header-actions">
     <!-- Countdown Corner Button with text beside logo -->
-    <button class="icon-btn" id="openCountdownModalBtn" title="Exam Countdowns">
+    <button class="icon-btn" id="openCountdownModalBtn" title="Event Countdowns">
       <span>⏳</span>
       <span>Countdown</span>
     </button>
@@ -514,15 +514,15 @@ textarea{resize:vertical;min-height:70px}
   </div>
 </div>
 
-<!-- Unlimited Exam Countdowns Modal (Strict DD/MM/YYYY text format input) -->
+<!-- Unlimited Event Countdowns Modal (DD/MM/YYYY text format input) -->
 <div class="modal-backdrop" id="countdownModal">
   <div class="modal countdown-modal-box">
-    <h2>🎯 Animated Exam Countdowns</h2>
+    <h2>🎯 Event Countdown</h2>
     <form id="countdownForm" class="form-grid">
-      <label>Exam Name
+      <label>Event Name
         <input type="text" id="cdName" placeholder="e.g. DU Admission / KUET" required>
       </label>
-      <label>Exam Date (DD/MM/YYYY)
+      <label>Event Date
         <input type="text" id="cdDate" placeholder="DD/MM/YYYY" pattern="\d{2}/\d{2}/\d{4}" title="Please enter date in DD/MM/YYYY format" required>
       </label>
       <button type="submit" class="primary" style="margin-top: 4px;">Add Countdown Target</button>
@@ -655,7 +655,7 @@ $("countdownForm").onsubmit=e=>{
     return;
   }
   const day = parts[0], month = parts[1], year = parts[2];
-  const isoDateVal = `${year}-${month}-${day}`; // Convert to YYYY-MM-DD for backend countdown calc
+  const isoDateVal = `${year}-${month}-${day}`; // Convert to YYYY-MM-DD for calculations
 
   countdowns.push({id:Date.now().toString(), name, date: isoDateVal});
   saveCD();
