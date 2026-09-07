@@ -305,18 +305,19 @@ textarea{resize:vertical;min-height:70px}
 .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
 .danger{color:var(--danger)}
 
-/* Enhanced Large Animated Countdown Styles with Up-Down Motion & Pure White Font */
+/* Unlimited Event Countdown Modal Styles with Date Picker Icon Support */
 .countdown-modal-box {
   width: min(560px, 100%);
-  max-height: 85vh;
-  overflow-y: auto;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
 }
 .countdown-list-wrap {
   display: flex;
   flex-direction: column;
   gap: 16px;
   margin-top: 15px;
-  max-height: 380px;
+  max-height: 50vh;
   overflow-y: auto;
   padding-right: 4px;
 }
@@ -330,6 +331,7 @@ textarea{resize:vertical;min-height:70px}
   flex-direction: column;
   gap: 14px;
   box-shadow: 0 12px 30px rgba(15, 23, 42, 0.4);
+  flex-shrink: 0;
 }
 .countdown-item-top {
   display: flex;
@@ -341,6 +343,37 @@ textarea{resize:vertical;min-height:70px}
   font-size: 16px;
   color: #f3f4f6;
   letter-spacing: -0.3px;
+}
+
+/* Custom wrapper to keep text input and calendar picker unified */
+.date-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.date-input-wrapper input[type="text"] {
+  padding-right: 42px; /* Space for the calendar icon */
+}
+/* Hidden native date picker overlaying or triggered seamlessly */
+.date-input-wrapper input[type="date"] {
+  position: absolute;
+  right: 10px;
+  width: 28px;
+  height: 28px;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 2;
+}
+.calendar-icon-btn {
+  position: absolute;
+  right: 12px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 16px;
+  pointer-events: none;
+  display: grid;
+  place-items: center;
+  z-index: 1;
 }
 
 /* Larger Flip-Digit Style Timer Container */
@@ -361,7 +394,7 @@ textarea{resize:vertical;min-height:70px}
 .cd-digit {
   font-size: 24px;
   font-weight: 800;
-  color: #ffffff; /* Pure white font */
+  color: #ffffff;
   display: block;
   font-variant-numeric: tabular-nums;
   text-shadow: 0 2px 10px rgba(255, 255, 255, 0.3);
@@ -376,7 +409,6 @@ textarea{resize:vertical;min-height:70px}
   font-weight: 700;
 }
 
-/* Up and Down Animation */
 @keyframes bounceUpDown {
   0%, 100% { transform: translateY(0); border-color: rgba(139, 92, 246, 0.4); }
   50% { transform: translateY(-4px); border-color: rgba(255, 255, 255, 0.5); }
@@ -451,7 +483,6 @@ textarea{resize:vertical;min-height:70px}
     <div><h1>DAILYFLOW</h1><div class="subtitle">Personal Productivity Workspace</div></div>
   </div>
   <div class="header-actions">
-    <!-- Countdown Corner Button with text beside logo -->
     <button class="icon-btn" id="openCountdownModalBtn" title="Event Countdowns">
       <span>⏳</span>
       <span>Countdown</span>
@@ -514,23 +545,27 @@ textarea{resize:vertical;min-height:70px}
   </div>
 </div>
 
-<!-- Unlimited Event Countdowns Modal (DD/MM/YYYY text format input) -->
+<!-- EVENT COUNTDOWN MODAL (With Event Name, Event Date DD/MM/YYYY & Calendar Icon Picker) -->
 <div class="modal-backdrop" id="countdownModal">
   <div class="modal countdown-modal-box">
-    <h2>🎯 Event Countdown</h2>
+    <h2>🎯 EVENT COUNTDOWN</h2>
     <form id="countdownForm" class="form-grid">
       <label>Event Name
         <input type="text" id="cdName" placeholder="e.g. DU Admission / KUET" required>
       </label>
-      <label>Event Date
-        <input type="text" id="cdDate" placeholder="DD/MM/YYYY" pattern="\d{2}/\d{2}/\d{4}" title="Please enter date in DD/MM/YYYY format" required>
+      <label>Event Date (DD/MM/YYYY)
+        <div class="date-input-wrapper">
+          <input type="text" id="cdDate" placeholder="DD/MM/YYYY" maxlength="10" autocomplete="off" required>
+          <input type="date" id="cdDatePicker" title="Select date from calendar">
+          <span class="calendar-icon-btn">📅</span>
+        </div>
       </label>
       <button type="submit" class="primary" style="margin-top: 4px;">Add Countdown Target</button>
     </form>
 
     <div style="margin-top: 20px; font-weight: 700; font-size: 14px;">Active Countdowns:</div>
     <div class="countdown-list-wrap" id="countdownListContainer">
-      <!-- Dynamic animated countdown cards will load here -->
+      <!-- Dynamic countdown cards load here -->
     </div>
 
     <div class="modal-actions" style="margin-top: 20px;">
@@ -542,7 +577,7 @@ textarea{resize:vertical;min-height:70px}
 <script>
 const KEY="dailyflow_tasks_v2";
 const THEME="dailyflow_theme_v2";
-const CD_KEY="dailyflow_countdowns_v3";
+const CD_KEY="dailyflow_countdowns_v4";
 
 let tasks=JSON.parse(localStorage.getItem(KEY)||"[]");
 let countdowns=JSON.parse(localStorage.getItem(CD_KEY)||"[]");
@@ -638,28 +673,50 @@ $("tasks").onclick=e=>{
   save();render();
 };
 
-/* Animated Countdown Modal Logic with DD/MM/YYYY Parsing */
+/* Event Countdown Logic with DD/MM/YYYY Auto-Formatting & Calendar Picker Support */
 $("openCountdownModalBtn").onclick=()=>$("countdownModal").classList.add("show");
 $("closeCountdownModalBtn").onclick=()=>$("countdownModal").classList.remove("show");
 $("countdownModal").addEventListener("click",e=>{if(e.target===$("countdownModal"))$("countdownModal").classList.remove("show")});
 
+// Auto-formatting logic for DD/MM/YYYY as user types numbers
+const cdDateInput = $("cdDate");
+const cdDatePicker = $("cdDatePicker");
+
+cdDateInput.addEventListener("input", (e) => {
+  let val = e.target.value.replace(/\D/g, "");
+  if (val.length >= 2 && val.length <= 4) {
+    val = val.slice(0, 2) + "/" + val.slice(2);
+  } else if (val.length > 4) {
+    val = val.slice(0, 2) + "/" + val.slice(2, 4) + "/" + val.slice(4, 8);
+  }
+  e.target.value = val;
+});
+
+// Sync calendar picker choice into DD/MM/YYYY format text input
+cdDatePicker.addEventListener("change", (e) => {
+  const val = e.target.value; // Returns YYYY-MM-DD
+  if (!val) return;
+  const parts = val.split("-"); // [YYYY, MM, DD]
+  cdDateInput.value = `${parts[2]}/${parts[1]}/${parts[0]}`;
+});
+
 $("countdownForm").onsubmit=e=>{
   e.preventDefault();
   const name=$("cdName").value.trim();
-  const dateStr=$("cdDate").value.trim(); // Format expected: DD/MM/YYYY
+  const dateStr=cdDateInput.value.trim();
   if(!name || !dateStr) return;
 
   const parts = dateStr.split('/');
-  if(parts.length !== 3) {
-    alert("Please write the date in correct DD/MM/YYYY format (e.g., 25/12/2026)");
+  if(parts.length !== 3 || parts[0].length !== 2 || parts[1].length !== 2 || parts[2].length !== 4) {
+    alert("Please enter a valid date in DD/MM/YYYY format.");
     return;
   }
   const day = parts[0], month = parts[1], year = parts[2];
-  const isoDateVal = `${year}-${month}-${day}`; // Convert to YYYY-MM-DD for calculations
+  const isoDateVal = `${year}-${month}-${day}`;
 
   countdowns.push({id:Date.now().toString(), name, date: isoDateVal});
   saveCD();
-  $("cdName").value=""; $("cdDate").value="";
+  $("cdName").value=""; cdDateInput.value=""; cdDatePicker.value="";
   renderCountdowns();
 };
 
