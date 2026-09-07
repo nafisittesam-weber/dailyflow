@@ -19,7 +19,9 @@ header{display:flex;align-items:center;justify-content:space-between;gap:15px;ma
 .brand{display:flex;align-items:center;gap:12px}
 .logo{width:46px;height:46px;border-radius:14px;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:23px;font-weight:800}
 h1{font-size:25px;margin:0}.subtitle{color:var(--muted);font-size:13px;margin-top:3px}
-.icon-btn{width:42px;height:42px;border-radius:12px;background:var(--card);box-shadow:var(--shadow);font-size:18px;color:var(--text)}
+.header-actions{display:flex;align-items:center;gap:10px}
+.icon-btn{width:42px;height:42px;border-radius:12px;background:var(--card);box-shadow:var(--shadow);font-size:18px;color:var(--text);display:grid;place-items:center}
+.logout-btn{background:#fee2e2;color:var(--danger);border:none;border-radius:12px;padding:0 14px;height:42px;font-weight:700;font-size:13px}
 .hero{background:linear-gradient(135deg,#635bff,#8b5cf6);color:white;border-radius:24px;padding:26px;box-shadow:0 18px 45px rgba(99,91,255,.22);margin-bottom:20px}
 .hero-top{display:flex;justify-content:space-between;align-items:center;gap:20px}
 .date-title{font-size:22px;font-weight:750}.date-sub{opacity:.82;margin-top:5px}
@@ -60,24 +62,30 @@ textarea{resize:vertical;min-height:75px}
 </style>
 </head>
 <body>
-<div class="app" id="mainApp" style="display: none;">
-  <!-- Auth Section UI -->
-<div id="authSection" style="max-width: 400px; margin: 20px auto; padding: 20px; border: 1px solid #ccc; border-radius: 8px; text-align: center;">
-  <h2 id="authTitle">Login to DailyFlow</h2>
-  <input type="email" id="authEmail" placeholder="Email" style="width: 90%; padding: 8px; margin: 8px 0;" required><br>
-  <input type="password" id="authPassword" placeholder="Password" style="width: 90%; padding: 8px; margin: 8px 0;" required><br>
-  <button id="authPrimaryBtn" style="padding: 8px 16px; margin-top: 10px; cursor: pointer;">Log In</button>
+
+<!-- Auth Section UI (Login / Sign Up) -->
+<div id="authSection" style="max-width: 400px; margin: 60px auto; padding: 25px; border: 1px solid var(--line); border-radius: 16px; text-align: center; background: var(--card); box-shadow: var(--shadow);">
+  <h2 id="authTitle" style="margin-top: 0;">Login to DailyFlow</h2>
+  <input type="email" id="authEmail" placeholder="Email" required><br>
+  <input type="password" id="authPassword" placeholder="Password" style="margin-top: 10px;" required><br>
+  <button id="authPrimaryBtn" class="primary" style="width: 100%; margin-top: 15px;">Log In</button>
   <p style="margin-top: 15px; font-size: 14px;">
     <span id="toggleAuthMsg">Don't have an account?</span> 
-    <a href="#" id="toggleAuthBtn" style="color: blue; text-decoration: underline;">Sign Up</a>
+    <a href="#" id="toggleAuthBtn" style="color: var(--accent); text-decoration: underline; font-weight: 600;">Sign Up</a>
   </p>
 </div>
+
+<!-- Main Dashboard App (Initially Hidden) -->
+<div class="app" id="mainApp" style="display: none;">
 <header>
   <div class="brand">
     <div class="logo">✓</div>
     <div><h1>DAILYFLOW</h1><div class="subtitle">Plan your day. Finish your work.</div></div>
   </div>
-  <button class="icon-btn" id="themeBtn" title="Toggle theme">☾</button>
+  <div class="header-actions">
+    <button class="icon-btn" id="themeBtn" title="Toggle theme">☾</button>
+    <button class="logout-btn" id="logoutBtn">Log out</button>
+  </div>
 </header>
 
 <section class="hero">
@@ -105,7 +113,8 @@ textarea{resize:vertical;min-height:75px}
   </select>
 </div>
 
-<div class="tasks" id="tasks"></div><div style="text-align:center;color:var(--muted);font-size:12px;margin-top:28px;">Owned &amp; created by <strong style="color:var(--text);">MD NAFIS ITTESAM</strong></div>
+<div class="tasks" id="tasks"></div>
+<div style="text-align:center;color:var(--muted);font-size:12px;margin-top:28px;">Owned &amp; created by <strong style="color:var(--text);">MD NAFIS ITTESAM</strong></div>
 </div>
 
 <div class="modal-backdrop" id="modal">
@@ -238,13 +247,13 @@ darkStyle.textContent=`body.dark{--bg:#0f172a;--card:#172033;--text:#f1f5f9;--mu
 document.head.appendChild(darkStyle);
 applyTheme();render();
 </script>
-<!-- Firebase & Firestore Integration Script -->
+
+<!-- Firebase Authentication Script -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-  import { getFirestore, doc, setDoc, getDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+  import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-  // Your Firebase configuration
   const firebaseConfig = {
     apiKey: "AIzaSyD6emOj7NK3UYBeAfuX3kdyZICb1ohYK4o",
     authDomain: "dailyflow-app-191e7.firebaseapp.com",
@@ -255,25 +264,25 @@ applyTheme();render();
     measurementId: "G-YNRC1MWZRZ"
   };
 
-  // Initialize Firebase
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getFirestore(app);
 
-  console.log("Firebase Connected Successfully to DAILYFLOW!");
- const mainApp = document.getElementById("mainApp");
-const authSection = document.getElementById("authSection");
+  const mainApp = document.getElementById("mainApp");
+  const authSection = document.getElementById("authSection");
+  const logoutBtn = document.getElementById("logoutBtn");
 
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    authSection.style.display = "none";
-    mainApp.style.display = "block";
-  } else {
-    authSection.style.display = "block";
-    mainApp.style.display = "none";
-  }
-});
-  // DOM Elements
+  // Auth State Listener (লগইন থাকলে ড্যাশবোর্ড দেখাবে, না থাকলে লগইন ফর্ম)
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      authSection.style.display = "none";
+      mainApp.style.display = "block";
+    } else {
+      authSection.style.display = "block";
+      mainApp.style.display = "none";
+    }
+  });
+
   const authEmail = document.getElementById("authEmail");
   const authPassword = document.getElementById("authPassword");
   const authPrimaryBtn = document.getElementById("authPrimaryBtn");
@@ -283,7 +292,6 @@ onAuthStateChanged(auth, (user) => {
 
   let isSignUpMode = false;
 
-  // Toggle between Login and Sign Up
   toggleAuthBtn.addEventListener("click", (e) => {
     e.preventDefault();
     isSignUpMode = !isSignUpMode;
@@ -300,7 +308,6 @@ onAuthStateChanged(auth, (user) => {
     }
   });
 
-  // Handle Authentication Action
   authPrimaryBtn.addEventListener("click", async () => {
     const email = authEmail.value;
     const password = authPassword.value;
@@ -312,14 +319,23 @@ onAuthStateChanged(auth, (user) => {
 
     try {
       if (isSignUpMode) {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        alert("Account created successfully! Welcome " + userCredential.user.email);
+        await createUserWithEmailAndPassword(auth, email, password);
+        alert("Account created successfully!");
       } else {
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        alert("Logged in successfully! Welcome " + userCredential.user.email);
+        await signInWithEmailAndPassword(auth, email, password);
       }
     } catch (error) {
       alert("Authentication Error: " + error.message);
+    }
+  });
+
+  // Logout Functionality
+  logoutBtn.addEventListener("click", async () => {
+    try {
+      await signOut(auth);
+      alert("Logged out successfully!");
+    } catch (error) {
+      alert("Error logging out: " + error.message);
     }
   });
 </script>
