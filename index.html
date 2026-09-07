@@ -305,6 +305,47 @@ textarea{resize:vertical;min-height:70px}
 .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
 .danger{color:var(--danger)}
 
+/* Multi Countdown Corner Modal Styles */
+.countdown-modal-box {
+  width: min(520px, 100%);
+  max-height: 85vh;
+  overflow-y: auto;
+}
+.countdown-list-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 15px;
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.countdown-item-card {
+  background: linear-gradient(135deg, #1e1b4b, #312e81);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 14px;
+  padding: 14px;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.countdown-item-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.countdown-item-title {
+  font-weight: 700;
+  font-size: 15px;
+  color: #c084fc;
+}
+.countdown-item-timer {
+  font-size: 13px;
+  font-weight: 600;
+  color: #38bdf8;
+}
+
 @media(max-width:650px){
  .hero-top{display:block}.progress-wrap{margin-top:16px;min-width:0}.stats{grid-template-columns:repeat(3,1fr)}
  .task{padding:12px;gap:10px}.task-time{min-width:58px;font-size:12px}.badge{display:none}
@@ -374,6 +415,8 @@ textarea{resize:vertical;min-height:70px}
     <div><h1>DAILYFLOW</h1><div class="subtitle">Personal Productivity Workspace</div></div>
   </div>
   <div class="header-actions">
+    <!-- Countdown Corner Button -->
+    <button class="icon-btn" id="openCountdownModalBtn" title="Exam Countdowns">⏳</button>
     <button class="icon-btn" id="themeBtn" title="Toggle theme">☾</button>
     <button class="logout-btn" id="logoutBtn">Log out</button>
   </div>
@@ -432,15 +475,45 @@ textarea{resize:vertical;min-height:70px}
   </div>
 </div>
 
+<!-- Unlimited Exam Countdowns Modal -->
+<div class="modal-backdrop" id="countdownModal">
+  <div class="modal countdown-modal-box">
+    <h2>🎯 Unlimited Exam Countdowns</h2>
+    <form id="countdownForm" class="form-grid">
+      <label>Exam Name
+        <input type="text" id="cdName" placeholder="e.g. DU Admission / KUET" required>
+      </label>
+      <label>Exam Date & Time
+        <input type="datetime-local" id="cdDate" required>
+      </label>
+      <button type="submit" class="primary" style="margin-top: 4px;">Add Countdown Target</button>
+    </form>
+
+    <div style="margin-top: 20px; font-weight: 700; font-size: 14px;">Active Countdowns:</div>
+    <div class="countdown-list-wrap" id="countdownListContainer">
+      <!-- Dynamic countdowns will load here -->
+    </div>
+
+    <div class="modal-actions" style="margin-top: 20px;">
+      <button type="button" class="secondary" id="closeCountdownModalBtn">Close</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const KEY="dailyflow_tasks_v2";
 const THEME="dailyflow_theme_v2";
+const CD_KEY="dailyflow_countdowns_v1";
+
 let tasks=JSON.parse(localStorage.getItem(KEY)||"[]");
+let countdowns=JSON.parse(localStorage.getItem(CD_KEY)||"[]");
 let editingId=null;
 
 const $=id=>document.getElementById(id);
 function todayKey(d=new Date()){return d.toISOString().slice(0,10)}
 function save(){localStorage.setItem(KEY,JSON.stringify(tasks))}
+function saveCD(){localStorage.setItem(CD_KEY,JSON.stringify(countdowns))}
+
 function formatDate(){
   const d=new Date();
   $("dateTitle").textContent=d.toLocaleDateString(undefined,{weekday:"long",month:"short",day:"numeric",year:"numeric"});
@@ -525,6 +598,75 @@ $("tasks").onclick=e=>{
   if(action==="delete" && confirm("Are you sure you want to delete this task?"))tasks=tasks.filter(x=>x.id!==id);
   save();render();
 };
+
+/* Countdown Modal Logic */
+$("openCountdownModalBtn").onclick=()=>$("countdownModal").classList.add("show");
+$("closeCountdownModalBtn").onclick=()=>$("countdownModal").classList.remove("show");
+$("countdownModal").addEventListener("click",e=>{if(e.target===$("countdownModal"))$("countdownModal").classList.remove("show")});
+
+$("countdownForm").onsubmit=e=>{
+  e.preventDefault();
+  const name=$("cdName").value.trim();
+  const date=$("cdDate").value;
+  if(!name || !date) return;
+  countdowns.push({id:Date.now().toString(), name, date});
+  saveCD();
+  $("cdName").value=""; $("cdDate").value="";
+  renderCountdowns();
+};
+
+function renderCountdowns(){
+  const container=$("countdownListContainer");
+  container.innerHTML="";
+  if(!countdowns.length){
+    container.innerHTML=`<div style="color:var(--muted);font-size:13px;text-align:center;padding:15px;">No active countdowns added yet.</div>`;
+    return;
+  }
+  countdowns.forEach(item=>{
+    const card=document.createElement("div");
+    card.className="countdown-item-card";
+    card.innerHTML=`
+      <div class="countdown-item-top">
+        <span class="countdown-item-title">${esc(item.name)}</span>
+        <button class="small-btn danger" onclick="deleteCountdown('${item.id}')" title="Delete">×</button>
+      </div>
+      <div class="countdown-item-timer" id="cd-timer-${item.id}">Calculating...</div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+function deleteCountdown(id){
+  countdowns=countdowns.filter(x=>x.id!==id);
+  saveCD();
+  renderCountdowns();
+}
+
+function updateAllCountdowns(){
+  countdowns.forEach(item=>{
+    const targetTime=new Date(item.date).getTime();
+    const now=new Date().getTime();
+    const timeLeft=targetTime - now;
+    const el=$(`cd-timer-${item.id}`);
+    if(!el) return;
+
+    if(timeLeft<0){
+      el.textContent="Exam time arrived!";
+      return;
+    }
+
+    const days=Math.floor(timeLeft/(1000*60*60*24));
+    const hours=Math.floor((timeLeft%(1000*60*60*24))/(1000*60*60));
+    const minutes=Math.floor((timeLeft%(1000*60*60))/(1000*60));
+    const seconds=Math.floor((timeLeft%(1000*60))/1000);
+
+    el.textContent=`${days} days, ${hours} hours, ${minutes} mins, ${seconds} secs remaining`;
+  });
+}
+
+setInterval(updateAllCountdowns,1000);
+renderCountdowns();
+
 $("themeBtn").onclick=()=>{
   const dark=document.body.classList.toggle("dark");
   localStorage.setItem(THEME,dark?"dark":"light"); applyTheme();
