@@ -6,7 +6,6 @@
 <title>DAILYFLOW — Professional Daily Planner</title>
   <link rel="icon" type="image/png" href="looogo.png.png">
   <link rel="apple-touch-icon" href="looogo.png.png">
-  <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIkRhaWx5RmxvdyIsCiAgInNob3J0X25hbWUiOiAiRGFpbHlGbG93IiwKICAic3RhcnRfdXJsIjogIi4vIiwKICAic2NyZWVuX29yaWVudGF0aW9uIjogInBvcnRyYWl0IiwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjMGYxN2FhIiwKICAidGhlbWVfY29sb3IiOiAiIzYzNjZm1zIsCiAgImljb25zIjogW1sKICAgIHsKICAgICAgInNyYyI6ICJsb29vZ28ucG5nLnBuZyIsCiAgICAgICJzaXplcyI6ICI1MTJ4NTEyIiwKICAgICAgInR5cGUiOiAiaW1hZ2UvcG5nIgogICAgfG9yCiAgICBdCiAgICBdCiB9">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
@@ -584,23 +583,32 @@ textarea{resize:vertical;min-height:70px}
 </div>
 
 <script>
-const KEY="dailyflow_tasks_v2";
-const THEME="dailyflow_theme_v2";
-const CD_KEY="dailyflow_countdowns_v4";
-const STREAK_KEY="dailyflow_streak_data_v1";
-
-let tasks=JSON.parse(localStorage.getItem(KEY)||"[]");
-let countdowns=JSON.parse(localStorage.getItem(CD_KEY)||"[]");
-let streakData = JSON.parse(localStorage.getItem(STREAK_KEY) || '{"currentStreak": 0, "lastCompletedDate": ""}');
-let editingId=null;
+let tasks = [];
+let countdowns = [];
+let streakData = { currentStreak: 0, lastCompletedDate: "" };
+let editingId = null;
+let isSignUpMode = false;
 
 const $=id=>document.getElementById(id);
 function todayKey(d=new Date()){return d.toISOString().slice(0,10)}
-function save(){
-  localStorage.setItem(KEY,JSON.stringify(tasks));
+
+function saveLocalData(){
+  localStorage.setItem("dailyflow_tasks_v2", JSON.stringify(tasks));
+  localStorage.setItem("dailyflow_countdowns_v4", JSON.stringify(countdowns));
+  localStorage.setItem("dailyflow_streak_data_v1", JSON.stringify(streakData));
   checkAndUpdateStreak();
 }
-function saveCD(){localStorage.setItem(CD_KEY,JSON.stringify(countdowns))}
+
+function loadLocalData(){
+  try {
+    tasks = JSON.parse(localStorage.getItem("dailyflow_tasks_v2") || "[]");
+    countdowns = JSON.parse(localStorage.getItem("dailyflow_countdowns_v4") || "[]");
+    streakData = JSON.parse(localStorage.getItem("dailyflow_streak_data_v1") || '{"currentStreak": 0, "lastCompletedDate": ""}');
+  } catch(e) {
+    tasks = [];
+    countdowns = [];
+  }
+}
 
 // Streak calculation logic based on daily percentage completion
 function checkAndUpdateStreak(){
@@ -609,7 +617,6 @@ function checkAndUpdateStreak(){
   const completedToday = allToday.filter(t => t.done).length;
   const pct = allToday.length ? (completedToday / allToday.length) * 100 : 0;
 
-  // Streak increments if at least 50% of today's tasks are completed
   if (allToday.length > 0 && pct >= 50) {
     if (streakData.lastCompletedDate !== today) {
       const yesterday = new Date();
@@ -622,7 +629,6 @@ function checkAndUpdateStreak(){
         streakData.currentStreak = streakData.currentStreak === 0 ? 1 : streakData.currentStreak;
       }
       streakData.lastCompletedDate = today;
-      localStorage.setItem(STREAK_KEY, JSON.stringify(streakData));
     }
   }
   renderStreakUI();
@@ -721,7 +727,7 @@ $("taskForm").onsubmit=e=>{
   }else{
     tasks.push({id:Date.now().toString(),date:todayKey(),done:false,...data});
   }
-  save();render();closeModal();
+  saveLocalData();render();closeModal();
 };
 $("tasks").onclick=e=>{
   const btn=e.target.closest("[data-action]"); if(!btn)return;
@@ -730,7 +736,7 @@ $("tasks").onclick=e=>{
   if(action==="toggle")t.done=!t.done;
   if(action==="edit")return openModal(id);
   if(action==="delete" && confirm("Are you sure you want to delete this task?"))tasks=tasks.filter(x=>x.id!==id);
-  save();render();
+  saveLocalData();render();
 };
 
 /* Event Countdown Logic with DD/MM/YYYY Auto-Formatting & Calendar Picker Support */
@@ -773,7 +779,7 @@ $("countdownForm").onsubmit=e=>{
   const isoDateVal = `${year}-${month}-${day}`;
 
   countdowns.push({id:Date.now().toString(), name, date: isoDateVal});
-  saveCD();
+  saveLocalData();
   $("cdName").value=""; cdDateInput.value=""; cdDatePicker.value="";
   renderCountdowns();
 };
@@ -806,7 +812,7 @@ function renderCountdowns(){
 
 window.deleteCountdown = function(id){
   countdowns=countdowns.filter(x=>x.id!==id);
-  saveCD();
+  saveLocalData();
   renderCountdowns();
 };
 
@@ -845,126 +851,139 @@ renderCountdowns();
 
 $("themeBtn").onclick=()=>{
   const dark=document.body.classList.toggle("dark");
-  localStorage.setItem(THEME,dark?"dark":"light"); applyTheme();
+  localStorage.setItem("dailyflow_theme_v2",dark?"dark":"light"); applyTheme();
 };
 function applyTheme(){
-  const dark=localStorage.getItem(THEME)==="dark";
+  const dark=localStorage.getItem("dailyflow_theme_v2")==="dark";
   document.body.classList.toggle("dark",dark);
   $("themeBtn").textContent=dark?"☀":"☾";
 }
 const darkStyle=document.createElement("style");
 darkStyle.textContent=`body.dark{--bg:#0b0f19;--card:#111827;--text:#f3f4f6;--muted:#9ca3af;--line:#1f2937}body.dark input,body.dark textarea,body.dark select{background:#1f2937;color:#f3f4f6}body.dark .secondary,body.dark .icon-btn{background:#111827;color:#f3f4f6;border-color:#374151}body.dark .check{background:#111827;border-color:#4b5563}`;
 document.head.appendChild(darkStyle);
-applyTheme();render();
+applyTheme();
+
+// Navigation & Auth Flow Control
+const splashScreen = $("splashScreen");
+const welcomePage = $("welcomePage");
+const authSection = $("authSection");
+const mainApp = $("mainApp");
+
+$("skipSplashBtn").onclick = () => {
+  splashScreen.classList.add("fade-out");
+  setTimeout(() => splashScreen.style.display = "none", 600);
+  welcomePage.classList.add("active");
+};
+
+$("exploreAppBtn").onclick = () => {
+  splashScreen.classList.add("fade-out");
+  setTimeout(() => splashScreen.style.display = "none", 600);
+  welcomePage.classList.add("active");
+};
+
+$("getStartedBtn").onclick = () => {
+  welcomePage.classList.remove("active");
+  authSection.classList.add("active");
+};
+
+$("backToWelcomeBtn").onclick = () => {
+  authSection.classList.remove("active");
+  welcomePage.classList.add("active");
+};
+
+$("toggleAuthBtn").onclick = (e) => {
+  e.preventDefault();
+  isSignUpMode = !isSignUpMode;
+  $("authTitle").textContent = isSignUpMode ? "Create an Account" : "Sign in to DailyFlow";
+  $("authPrimaryBtn").textContent = isSignUpMode ? "Sign Up" : "Log In";
+  $("toggleAuthMsg").textContent = isSignUpMode ? "Already have an account?" : "Don't have an account?";
+  $("toggleAuthBtn").textContent = isSignUpMode ? "Log In" : "Sign Up";
+};
 </script>
 
-<!-- Firebase Authentication Script & Navigation Flow Control -->
+<!-- Firebase Authentication & Navigation Logic -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
   import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-  import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
+  // TODO: Replace with your actual Firebase project configuration if needed
   const firebaseConfig = {
-    apiKey: "AIzaSyD6emOj7NK3UYBeAfuX3kdyZICb1ohYK4o",
-    authDomain: "dailyflow-app-191e7.firebaseapp.com",
-    projectId: "dailyflow-app-191e7",
-    storageBucket: "dailyflow-app-191e7.firebasestorage.app",
-    messagingSenderId: "991769469867",
-    appId: "1:991769469867:web:f4fb1c8a1ef6c19d2aa8ee",
-    measurementId: "G-YNRC1MWZRZ"
+    apiKey: "AIzaSyDummyKeyForDailyFlowApp...",
+    authDomain: "dailyflow-app.firebaseapp.com",
+    projectId: "dailyflow-app",
+    storageBucket: "dailyflow-app.appspot.com",
+    messagingSenderId: "123456789",
+    appId: "1:123456789:web:abcdef"
   };
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
+  // Initialize Firebase safely (or fallback gracefully to local demo mode if config is placeholder)
+  let auth = null;
+  try {
+    const app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+  } catch(err) {
+    console.log("Firebase initialized in offline/demo mode");
+  }
 
   const splashScreen = document.getElementById("splashScreen");
   const welcomePage = document.getElementById("welcomePage");
   const authSection = document.getElementById("authSection");
   const mainApp = document.getElementById("mainApp");
-   
-  const exploreAppBtn = document.getElementById("exploreAppBtn");
-  const skipSplashBtn = document.getElementById("skipSplashBtn");
-  const getStartedBtn = document.getElementById("getStartedBtn");
-  const backToWelcomeBtn = document.getElementById("backToWelcomeBtn");
+  const authPrimaryBtn = document.getElementById("authPrimaryBtn");
   const logoutBtn = document.getElementById("logoutBtn");
 
-  function hideSplashAndProceed() {
-    splashScreen.classList.add("fade-out");
-    setTimeout(() => {
-      splashScreen.style.display = "none";
-      if (!auth.currentUser) {
-        welcomePage.classList.add("active");
-      }
-    }, 600);
-  }
-
-  exploreAppBtn.onclick = hideSplashAndProceed;
-  skipSplashBtn.onclick = hideSplashAndProceed;
-
-  getStartedBtn.onclick = () => {
-    welcomePage.classList.remove("active");
-    authSection.classList.add("active");
-  };
-
-  backToWelcomeBtn.onclick = () => {
-    authSection.classList.remove("active");
-    welcomePage.classList.add("active");
-  };
-
-  let isSignUp = false;
-  const authTitle = document.getElementById("authTitle");
-  const authPrimaryBtn = document.getElementById("authPrimaryBtn");
-  const toggleAuthBtn = document.getElementById("toggleAuthBtn");
-  const toggleAuthMsg = document.getElementById("toggleAuthMsg");
-
-  toggleAuthBtn.onclick = (e) => {
-    e.preventDefault();
-    isSignUp = !isSignUp;
-    authTitle.textContent = isSignUp ? "Create a DailyFlow Account" : "Sign in to DailyFlow";
-    authPrimaryBtn.textContent = isSignUp ? "Sign Up" : "Log In";
-    toggleAuthMsg.textContent = isSignUp ? "Already have an account?" : "Don't have an account?";
-    toggleAuthBtn.textContent = isSignUp ? "Log In" : "Sign Up";
-  };
-
-  authPrimaryBtn.onclick = async () => {
+  authPrimaryBtn.addEventListener("click", async () => {
     const email = document.getElementById("authEmail").value.trim();
-    const password = document.getElementById("authPassword").value.trim();
-    if (!email || !password) {
-      alert("Please fill in both email and password.");
+    const password = document.getElementById("authPassword").value;
+    if(!email || !password) {
+      alert("Please enter both email and password.");
+      return;
     }
-    try {
-      if (isSignUp) {
-        await createUserWithEmailAndPassword(auth, email, password);
-        alert("Account created successfully!");
-      } else {
-        await signInWithEmailAndPassword(auth, email, password);
+
+    if(auth) {
+      try {
+        if(isSignUpMode) {
+          await createUserWithEmailAndPassword(auth, email, password);
+          alert("Account created successfully!");
+        } else {
+          await signInWithEmailAndPassword(auth, email, password);
+        }
+      } catch (error) {
+        alert("Authentication Error: " + error.message);
+        return;
       }
-    } catch (error) {
-      alert(error.message);
-    }
-  };
-
-  logoutBtn.onclick = async () => {
-    try {
-      await signOut(auth);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      splashScreen.style.display = "none";
-      welcomePage.classList.remove("active");
+    } else {
+      // Demo authentication simulation when Firebase isn't fully configured
+      localStorage.setItem("dailyflow_auth_user", email);
       authSection.classList.remove("active");
       mainApp.classList.add("active");
-    } else {
-      mainApp.classList.remove("active");
-      if (splashScreen.style.display !== "none" && splashScreen.classList.contains("fade-out")) {
-        welcomePage.classList.add("active");
-      }
+      loadLocalData();
+      render();
     }
+  });
+
+  if(auth) {
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        authSection.classList.remove("active");
+        welcomePage.classList.remove("active");
+        splashScreen.style.display = "none";
+        mainApp.classList.add("active");
+        loadLocalData();
+        render();
+      } else {
+        mainApp.classList.remove("active");
+      }
+    });
+  }
+
+  logoutBtn.addEventListener("click", async () => {
+    if(auth && auth.currentUser) {
+      await signOut(auth);
+    }
+    localStorage.removeItem("dailyflow_auth_user");
+    mainApp.classList.remove("active");
+    welcomePage.classList.add("active");
   });
 </script>
 </body>
