@@ -462,7 +462,7 @@ textarea{resize:vertical;min-height:70px}
   <div class="auth-card-header">
     <span class="auth-badge">Secure Portal</span>
     <h2 class="auth-title" id="authTitle">Sign in to DailyFlow</h2>
-    <div class="auth-desc">Enter your credentials to access your personal dashboard</div>
+    <div class="auth-desc" id="authDesc">Enter your credentials to access your personal dashboard</div>
   </div>
   <div class="form-group-wrap">
     <label>Email Address
@@ -551,7 +551,7 @@ textarea{resize:vertical;min-height:70px}
   </div>
 </div>
 
-<!-- EVENT COUNTDOWN MODAL (Fully Scrollable Container) -->
+<!-- EVENT COUNTDOWN MODAL -->
 <div class="modal-backdrop" id="countdownModal">
   <div class="modal countdown-modal-box">
     <h2>🎯 EVENT COUNTDOWN</h2>
@@ -572,9 +572,7 @@ textarea{resize:vertical;min-height:70px}
       <div style="margin-top: 15px; font-weight: 700; font-size: 14px;">Active Countdowns:</div>
     </div>
 
-    <div class="countdown-list-wrap" id="countdownListContainer">
-      <!-- Dynamic countdown cards load here -->
-    </div>
+    <div class="countdown-list-wrap" id="countdownListContainer"></div>
 
     <div class="modal-actions" style="margin-top: 15px; flex-shrink: 0;">
       <button type="button" class="secondary" id="closeCountdownModalBtn">Close</button>
@@ -583,6 +581,8 @@ textarea{resize:vertical;min-height:70px}
 </div>
 
 <script>
+let usersData = {};
+let currentUser = null;
 let tasks = [];
 let countdowns = [];
 let streakData = { currentStreak: 0, lastCompletedDate: "" };
@@ -592,25 +592,32 @@ let isSignUpMode = false;
 const $=id=>document.getElementById(id);
 function todayKey(d=new Date()){return d.toISOString().slice(0,10)}
 
-function saveLocalData(){
-  localStorage.setItem("dailyflow_tasks_v2", JSON.stringify(tasks));
-  localStorage.setItem("dailyflow_countdowns_v4", JSON.stringify(countdowns));
-  localStorage.setItem("dailyflow_streak_data_v1", JSON.stringify(streakData));
-  checkAndUpdateStreak();
-}
-
-function loadLocalData(){
-  try {
-    tasks = JSON.parse(localStorage.getItem("dailyflow_tasks_v2") || "[]");
-    countdowns = JSON.parse(localStorage.getItem("dailyflow_countdowns_v4") || "[]");
-    streakData = JSON.parse(localStorage.getItem("dailyflow_streak_data_v1") || '{"currentStreak": 0, "lastCompletedDate": ""}');
-  } catch(e) {
+function loadAppDataForUser(email) {
+  const allData = JSON.parse(localStorage.getItem("dailyflow_users_db") || "{}");
+  if (allData[email]) {
+    tasks = allData[email].tasks || [];
+    countdowns = allData[email].countdowns || [];
+    streakData = allData[email].streakData || { currentStreak: 0, lastCompletedDate: "" };
+  } else {
     tasks = [];
     countdowns = [];
+    streakData = { currentStreak: 0, lastCompletedDate: "" };
   }
 }
 
-// Streak calculation logic based on daily percentage completion
+function saveLocalData(){
+  if (!currentUser) return;
+  const allData = JSON.parse(localStorage.getItem("dailyflow_users_db") || "{}");
+  allData[currentUser] = {
+    tasks,
+    countdowns,
+    streakData
+  };
+  localStorage.setItem("dailyflow_users_db", JSON.stringify(allData));
+  checkAndUpdateStreak();
+}
+
+// Streak calculation logic
 function checkAndUpdateStreak(){
   const today = todayKey();
   const allToday = tasks.filter(t => t.date === today);
@@ -739,7 +746,7 @@ $("tasks").onclick=e=>{
   saveLocalData();render();
 };
 
-/* Event Countdown Logic with DD/MM/YYYY Auto-Formatting & Calendar Picker Support */
+/* Event Countdown Logic */
 $("openCountdownModalBtn").onclick=()=>$("countdownModal").classList.add("show");
 $("closeCountdownModalBtn").onclick=()=>$("countdownModal").classList.remove("show");
 $("countdownModal").addEventListener("click",e=>{if(e.target===$("countdownModal"))$("countdownModal").classList.remove("show")});
@@ -847,7 +854,6 @@ function updateAllCountdowns(){
 }
 
 setInterval(updateAllCountdowns,1000);
-renderCountdowns();
 
 $("themeBtn").onclick=()=>{
   const dark=document.body.classList.toggle("dark");
@@ -894,97 +900,77 @@ $("backToWelcomeBtn").onclick = () => {
 $("toggleAuthBtn").onclick = (e) => {
   e.preventDefault();
   isSignUpMode = !isSignUpMode;
-  $("authTitle").textContent = isSignUpMode ? "Create an Account" : "Sign in to DailyFlow";
+  $("authTitle").textContent = isSignUpMode ? "Create Account" : "Sign in to DailyFlow";
+  $("authDesc").textContent = isSignUpMode ? "Sign up to keep your tasks and countdowns private" : "Enter your credentials to access your personal dashboard";
   $("authPrimaryBtn").textContent = isSignUpMode ? "Sign Up" : "Log In";
   $("toggleAuthMsg").textContent = isSignUpMode ? "Already have an account?" : "Don't have an account?";
   $("toggleAuthBtn").textContent = isSignUpMode ? "Log In" : "Sign Up";
 };
-</script>
 
-<!-- Firebase Authentication & Navigation Logic -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+$("authPrimaryBtn").onclick = () => {
+  const email = $("authEmail").value.trim();
+  const password = $("authPassword").value;
 
-  // TODO: Replace with your actual Firebase project configuration if needed
-  const firebaseConfig = {
-    apiKey: "AIzaSyDummyKeyForDailyFlowApp...",
-    authDomain: "dailyflow-app.firebaseapp.com",
-    projectId: "dailyflow-app",
-    storageBucket: "dailyflow-app.appspot.com",
-    messagingSenderId: "123456789",
-    appId: "1:123456789:web:abcdef"
-  };
-
-  // Initialize Firebase safely (or fallback gracefully to local demo mode if config is placeholder)
-  let auth = null;
-  try {
-    const app = initializeApp(firebaseConfig);
-    auth = getAuth(app);
-  } catch(err) {
-    console.log("Firebase initialized in offline/demo mode");
+  if(!email || !password) {
+    alert("Please fill in both email and password.");
+    return;
   }
 
-  const splashScreen = document.getElementById("splashScreen");
-  const welcomePage = document.getElementById("welcomePage");
-  const authSection = document.getElementById("authSection");
-  const mainApp = document.getElementById("mainApp");
-  const authPrimaryBtn = document.getElementById("authPrimaryBtn");
-  const logoutBtn = document.getElementById("logoutBtn");
+  let usersDb = JSON.parse(localStorage.getItem("dailyflow_accounts") || "{}");
 
-  authPrimaryBtn.addEventListener("click", async () => {
-    const email = document.getElementById("authEmail").value.trim();
-    const password = document.getElementById("authPassword").value;
-    if(!email || !password) {
-      alert("Please enter both email and password.");
+  if(isSignUpMode) {
+    if(usersDb[email]) {
+      alert("An account with this email already exists. Please log in.");
       return;
     }
-
-    if(auth) {
-      try {
-        if(isSignUpMode) {
-          await createUserWithEmailAndPassword(auth, email, password);
-          alert("Account created successfully!");
-        } else {
-          await signInWithEmailAndPassword(auth, email, password);
-        }
-      } catch (error) {
-        alert("Authentication Error: " + error.message);
-        return;
-      }
-    } else {
-      // Demo authentication simulation when Firebase isn't fully configured
-      localStorage.setItem("dailyflow_auth_user", email);
-      authSection.classList.remove("active");
-      mainApp.classList.add("active");
-      loadLocalData();
-      render();
+    usersDb[email] = { password };
+    localStorage.setItem("dailyflow_accounts", JSON.stringify(usersDb));
+    alert("Account successfully created! Please log in.");
+    isSignUpMode = false;
+    $("authTitle").textContent = "Sign in to DailyFlow";
+    $("authPrimaryBtn").textContent = "Log In";
+    $("toggleAuthMsg").textContent = "Don't have an account?";
+    $("toggleAuthBtn").textContent = "Sign Up";
+    $("authPassword").value = "";
+  } else {
+    if(!usersDb[email] || usersDb[email].password !== password) {
+      alert("Invalid email or password!");
+      return;
     }
-  });
-
-  if(auth) {
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        authSection.classList.remove("active");
-        welcomePage.classList.remove("active");
-        splashScreen.style.display = "none";
-        mainApp.classList.add("active");
-        loadLocalData();
-        render();
-      } else {
-        mainApp.classList.remove("active");
-      }
-    });
+    currentUser = email;
+    localStorage.setItem("dailyflow_current_session", currentUser);
+    loadAppDataForUser(currentUser);
+    
+    authSection.classList.remove("active");
+    mainApp.classList.add("active");
+    render();
+    renderCountdowns();
   }
+};
 
-  logoutBtn.addEventListener("click", async () => {
-    if(auth && auth.currentUser) {
-      await signOut(auth);
-    }
-    localStorage.removeItem("dailyflow_auth_user");
-    mainApp.classList.remove("active");
-    welcomePage.classList.add("active");
-  });
+$("logoutBtn").onclick = () => {
+  currentUser = null;
+  localStorage.removeItem("dailyflow_current_session");
+  mainApp.classList.remove("active");
+  authSection.classList.add("active");
+  $("authEmail").value = "";
+  $("authPassword").value = "";
+};
+
+// Check active session on load
+window.onload = () => {
+  const savedSession = localStorage.getItem("dailyflow_current_session");
+  if(savedSession) {
+    currentUser = savedSession;
+    loadAppDataForUser(currentUser);
+    splashScreen.style.display = "none";
+    welcomePage.classList.remove("active");
+    authSection.classList.remove("active");
+    mainApp.classList.add("active");
+    render();
+    renderCountdowns();
+  }
+};
 </script>
 </body>
 </html>
